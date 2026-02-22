@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load formbuilder_extras %}
+
+{% block content %}
+  <div class="card">
+    <div class="card-header">
+      <h2>{{ form_obj.title }}</h2>
+      <p class="sub">Bitte beantworten Sie die Fragen. Werte werden als Codes gespeichert.</p>
+    </div>
+
+    <div class="card-body">
+      {% if submitted %}
+        <div class="result">
+          <h3>Danke!</h3>
+          <p>Ihre Antworten wurden gespeichert.</p>
+        </div>
+      {% endif %}
+
+      <form method="post" class="grid" novalidate>
+        {% csrf_token %}
+
+        {% for q in form_obj.questions.all %}
+          {% with key="q"|add:q.id|stringformat:"s" %}
+            <section class="field">
+              <div class="title">
+                {{ q.order }}. {{ q.text }}{% if q.required %} *{% endif %}
+              </div>
+
+              {% if q.help_text %}
+                <div class="hint">{{ q.help_text }}</div>
+              {% endif %}
+
+              {% if q.qtype == "YEAR_4" %}
+                <input
+                  type="number"
+                  inputmode="numeric"
+                  min="1900"
+                  max="2100"
+                  name="{{ key }}"
+                  value="{{ values|get_item:key|default:'' }}"
+                  placeholder="z. B. 1981"
+                  {% if q.required %}required{% endif %}
+                />
+
+              {% elif q.qtype == "RADIO_0_5" %}
+                <div class="scale" role="radiogroup" aria-label="{{ q.text }}">
+                  {% for c in q.choices.all %}
+                    {% with v=c.value|stringformat:"s" %}
+                      <label class="chip" aria-label="{{ q.text }} {{ v }}">
+                        <input
+                          type="radio"
+                          name="{{ key }}"
+                          value="{{ v }}"
+                          {% if values|get_item:key == v %}checked{% endif %}
+                          {% if q.required %}required{% endif %}
+                        />
+                        <span>{{ v }}</span>
+                        <span style="margin-left:8px; font-weight:500; color:var(--muted);">
+                          {{ c.label }}
+                        </span>
+                      </label>
+                    {% endwith %}
+                  {% endfor %}
+                </div>
+                <div class="hint">0 = nein · 5 = sehr</div>
+              {% endif %}
+
+              {% if errors|get_item:key %}
+                <div class="errors">{{ errors|get_item:key }}</div>
+              {% endif %}
+            </section>
+          {% endwith %}
+        {% endfor %}
+
+        <div class="actions">
+          <button type="submit">Absenden</button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

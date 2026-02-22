@@ -1,6 +1,95 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <h1>Startseite</h1>
-  <p>Home-App läuft ✅</p>
+  <div class="card">
+    <div class="card-header">
+      <h2>ePRO Kurzfragebogen</h2>
+      <p class="sub">Bitte beantworten Sie drei kurze Fragen. Skala: 0 = nein, 5 = sehr.</p>
+    </div>
+
+    <div class="card-body">
+      <form method="post" class="grid" novalidate>
+        {% csrf_token %}
+
+        <!-- 1) Birth year -->
+        <section class="field">
+          <label class="title" for="id_birth_year">1. In welchem Jahr sind Sie geboren?</label>
+          <input
+            id="id_birth_year"
+            name="birth_year"
+            type="number"
+            inputmode="numeric"
+            min="1900"
+            max="2100"
+            required
+            placeholder="z. B. 1981"
+            value="{{ form.birth_year }}"
+          />
+          <div class="hint">Wir fragen nur das Jahr ab.</div>
+          {% if errors.birth_year %}
+            <div class="errors">{{ errors.birth_year }}</div>
+          {% endif %}
+        </section>
+
+        <!-- 2) Depressed -->
+        <section class="field">
+          <div class="title">2. Fühlen Sie sich bedrückt?</div>
+          <div class="scale" role="radiogroup" aria-label="Bedrückt Skala 0 bis 5">
+            {% for i in scale %}
+              <label class="chip" aria-label="Bedrückt {{ i }}">
+                <input
+                  type="radio"
+                  name="depressed"
+                  value="{{ i }}"
+                  {% if form.depressed|stringformat:"s" == i|stringformat:"s" %}checked{% endif %}
+                />
+                {{ i }}
+              </label>
+            {% endfor %}
+          </div>
+          <div class="hint">0 = nein · 5 = sehr</div>
+          {% if errors.depressed %}
+            <div class="errors">{{ errors.depressed }}</div>
+          {% endif %}
+        </section>
+
+        <!-- 3) Sleep -->
+        <section class="field">
+          <div class="title">3. Haben Sie Schlafstörungen?</div>
+          <div class="scale" role="radiogroup" aria-label="Schlafstörungen Skala 0 bis 5">
+            {% for i in scale %}
+              <label class="chip" aria-label="Schlafstörungen {{ i }}">
+                <input
+                  type="radio"
+                  name="sleep"
+                  value="{{ i }}"
+                  {% if form.sleep|stringformat:"s" == i|stringformat:"s" %}checked{% endif %}
+                />
+                {{ i }}
+              </label>
+            {% endfor %}
+          </div>
+          <div class="hint">0 = nein · 5 = sehr</div>
+          {% if errors.sleep %}
+            <div class="errors">{{ errors.sleep }}</div>
+          {% endif %}
+        </section>
+
+        <div class="actions">
+          <button type="submit">Absenden</button>
+        </div>
+      </form>
+
+      {% if submitted %}
+        <div class="result">
+          <h3>Danke!</h3>
+          <div class="kv">
+            <div>Geburtsjahr</div><strong>{{ submitted.birth_year }}</strong>
+            <div>Bedrückt</div><strong>{{ submitted.depressed }}</strong>
+            <div>Schlafstörungen</div><strong>{{ submitted.sleep }}</strong>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
 {% endblock %}
