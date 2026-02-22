@@ -1,12 +1,13 @@
+from django.shortcuts import get_object_or_404
 from django.db import transaction
 from .models import Form, Submission
 
 class DjangoOrmFormRepository:
     def get_active_by_slug(self, slug: str) -> Form:
-        return (
-            Form.objects
-            .prefetch_related("questions__choices")
-            .get(slug=slug, is_active=True)
+        return get_object_or_404(
+            Form.objects.prefetch_related("questions__choices"),
+            slug=slug,
+            is_active=True,
         )
 
 
